@@ -1,5 +1,6 @@
-streamlit 
+ 
 pytesseract
 pillow
 pandas 
 PyMuPDF
+streamlit
