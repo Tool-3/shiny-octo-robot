@@ -1,0 +1,38 @@
+name: Python application
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'  # Adjust the version as needed
+
+    - name: Install Tesseract OCR
+      run: sudo apt-get update && sudo apt-get install -y tesseract-ocr
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install streamlit pytesseract pillow pandas PyMuPDF
+
+    - name: Test the application
+      run: |
+        # Here you can add commands to test your application
+        # For example, you can run a script to ensure everything works as expected
+        python -m unittest discover -s tests  # Assuming you have a tests directory with unit tests
+
+    - name: Run Streamlit
+      run: streamlit run app.py
