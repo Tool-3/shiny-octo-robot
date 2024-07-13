@@ -32,15 +32,19 @@ jobs:
       run: |
         wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip
         unzip ngrok-stable-linux-amd64.zip
+        sudo mv ngrok /usr/local/bin/ngrok
+
+    - name: Verify Ngrok version
+      run: ngrok version
 
     - name: Add Ngrok Authtoken
-      run: ./ngrok authtoken ${{ secrets.NGROK_AUTH_TOKEN }}
+      run: ngrok authtoken ${{ secrets.NGROK_AUTH_TOKEN }}
 
     - name: Run Streamlit app and Ngrok
       run: |
         nohup streamlit run app.py --server.port 8501 &
         sleep 10  # Give Streamlit time to start
-        ./ngrok http 8501 > ngrok.log &
+        nohup ./ngrok http 8501 > ngrok.log &
         sleep 10  # Give Ngrok time to start
         cat ngrok.log
       env:
