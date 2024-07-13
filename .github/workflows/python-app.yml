@@ -28,5 +28,30 @@ jobs:
         python -m pip install --upgrade pip
         pip install streamlit pytesseract pillow pandas PyMuPDF
 
-    - name: Run Streamlit
-      run: streamlit run app.py
+    - name: Download Ngrok
+      run: |
+        curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc > /dev/null
+        echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list
+        sudo apt-get update && sudo apt-get install ngrok
+
+    - name: Run Streamlit app and Ngrok
+      run: |
+        nohup streamlit run app.py --server.port 8501 &
+        sleep 10  # Give Streamlit time to start
+        ngrok http 8501 > ngrok.log &
+        sleep 10  # Give Ngrok time to start
+        cat ngrok.log
+      env:
+        STREAMLIT_SERVER_HEADLESS: 'true'
+        STREAMLIT_SERVER_RUN_ON_SAVE: 'true'
+
+    - name: Get Ngrok URL
+      id: ngrok
+      run: |
+        NGROK_URL=$(curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[0].public_url')
+        echo "NGROK_URL=${NGROK_URL}" >> $GITHUB_ENV
+      env:
+        NGROK_URL: ${{ steps.ngrok.outputs.ngrok_url }}
+
+    - name: Print Ngrok URL
+      run: echo "Your Streamlit app is running at ${{ env.NGROK_URL }}"
